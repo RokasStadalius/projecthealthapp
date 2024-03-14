@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projecthealthapp/common/genderDropDownMenu.dart';
 import 'package:projecthealthapp/presentation/screens/questions_screen_two.dart';
+import 'package:intl/intl.dart';
 
 const List<String> availableGenders = <String>['Male', 'Female', 'Other'];
 
@@ -15,6 +16,8 @@ class question_screen extends StatefulWidget {
 // ignore: camel_case_types
 class _question_screenState extends State<question_screen> {
   String dropdownValue = availableGenders.first;
+  TextEditingController _date = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +72,20 @@ class _question_screenState extends State<question_screen> {
                         height: 45,
                         width: 300,
                         child: TextFormField(
+                          controller: _date,
                           keyboardType: TextInputType.datetime,
+                          onTap: () async {
+                            DateTime? pickeddate = await showDatePicker(
+                                context: context,
+                                firstDate: DateTime(1999),
+                                lastDate: DateTime.now());
+                            if (pickeddate != null) {
+                              setState(() {
+                                _date.text =
+                                    DateFormat('yyyy-MM-dd').format(pickeddate);
+                              });
+                            }
+                          },
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
