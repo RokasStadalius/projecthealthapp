@@ -19,12 +19,6 @@ class _FoodPageState extends State<FoodPage> {
   EdamamApiService api = EdamamApiService();
   List<EdamamRecipeModel> recipes = [];
 
-  @override
-  void initState() {
-    _fetchRecipes(); // Fetch data asynchronously
-    super.initState();
-  }
-
   Future<void> _fetchRecipes() async {
     recipes = await api.getRecipes('pork', 'balanced'); // Await the future
     setState(() {}); // Trigger a rebuild after fetching data
@@ -34,6 +28,7 @@ class _FoodPageState extends State<FoodPage> {
 
   @override
   void initState() {
+    _fetchRecipes();
     loadlist();
     super.initState();
   }
@@ -45,7 +40,8 @@ class _FoodPageState extends State<FoodPage> {
 
   void loadlist() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() =>  selectedIngredients= prefs.getStringList('selectedIngredients')!);
+    setState(() =>
+        selectedIngredients = prefs.getStringList('selectedIngredients')!);
   }
 
   @override
