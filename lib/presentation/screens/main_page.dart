@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:projecthealthapp/common/auth.dart';
 import 'package:pedometer/pedometer.dart';
 import 'dart:async';
@@ -75,11 +76,10 @@ class _MainScreenState extends State<MainScreen> {
       await prefs.setInt('cupCount', 0);
       await prefs.setInt('stepCount', 0);
       setState(() {
-          _count = 0;
-          _steps = 0;
-        });
-        DatabaseService()
-            .addDailyData(cupCount: 0, stepCount: 0);
+        _count = 0;
+        _steps = 0;
+      });
+      DatabaseService().addDailyData(cupCount: 0, stepCount: 0);
     }
   }
 
@@ -92,7 +92,6 @@ class _MainScreenState extends State<MainScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('stepCount', stepCount);
   }
-
 
   String userName = "";
   int weight = 0;
@@ -218,53 +217,61 @@ class _MainScreenState extends State<MainScreen> {
                     const SizedBox(
                       height: 30,
                     ),
-                    Container(
-                      width: 355,
-                      height: 218,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Today's calorie goal:",
-                            style: TextStyle(
-                              color: Color.fromRGBO(59, 59, 59, 1),
-                              fontWeight: FontWeight.w100,
-                              fontFamily: 'Poppins',
-                              fontSize: 24,
+                    GestureDetector(
+                      onTap: () => {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const DiaryPage()))
+                      },
+                      child: Container(
+                        width: 355,
+                        height: 218,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Today's calorie goal:",
+                              style: TextStyle(
+                                color: Color.fromRGBO(59, 59, 59, 1),
+                                fontWeight: FontWeight.w100,
+                                fontFamily: 'Poppins',
+                                fontSize: 24,
+                              ),
                             ),
-                          ),
-                          Text(
-                            "2000 kcal",
-                            style: TextStyle(
-                              color: Color.fromRGBO(255, 199, 199, 1),
-                              fontWeight: FontWeight.w100,
-                              fontFamily: 'Poppins',
-                              fontSize: 28,
+                            Text(
+                              "2000 kcal",
+                              style: TextStyle(
+                                color: Color.fromRGBO(255, 199, 199, 1),
+                                fontWeight: FontWeight.w100,
+                                fontFamily: 'Poppins',
+                                fontSize: 28,
+                              ),
                             ),
-                          ),
-                          Text(
-                            "Health Streak:",
-                            style: TextStyle(
-                              color: Color.fromRGBO(59, 59, 59, 1),
-                              fontWeight: FontWeight.w100,
-                              fontFamily: 'Poppins',
-                              fontSize: 24,
+                            Text(
+                              "Health Streak:",
+                              style: TextStyle(
+                                color: Color.fromRGBO(59, 59, 59, 1),
+                                fontWeight: FontWeight.w100,
+                                fontFamily: 'Poppins',
+                                fontSize: 24,
+                              ),
                             ),
-                          ),
-                          Text(
-                            "10 days",
-                            style: TextStyle(
-                              color: Color.fromRGBO(255, 199, 199, 1),
-                              fontWeight: FontWeight.w100,
-                              fontFamily: 'Poppins',
-                              fontSize: 28,
+                            Text(
+                              "10 days",
+                              style: TextStyle(
+                                color: Color.fromRGBO(255, 199, 199, 1),
+                                fontWeight: FontWeight.w100,
+                                fontFamily: 'Poppins',
+                                fontSize: 28,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(
@@ -312,11 +319,19 @@ class _MainScreenState extends State<MainScreen> {
                         const SizedBox(
                           width: 6,
                         ),
-                        Image.asset(
-                          'assets/plus.png',
-                          height: 58,
-                          width: 78,
-                        ),
+                        IconButton(
+                          onPressed: () => {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const FoodPage()))
+                          },
+                          icon: Image.asset(
+                            'assets/plus.png',
+                            height: 58,
+                            width: 50,
+                          ),
+                        )
                       ]),
                     ),
                     const SizedBox(
@@ -536,7 +551,7 @@ class _MainScreenState extends State<MainScreen> {
                                       TextFormField(
                                         keyboardType: TextInputType.number,
                                         controller: weightController,
-                                        decoration: InputDecoration(
+                                        decoration: const InputDecoration(
                                             labelText: 'New weight'),
                                       ),
                                     ],
