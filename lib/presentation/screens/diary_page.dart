@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:projecthealthapp/common/lineChart.dart';
 import 'package:projecthealthapp/presentation/screens/food_page.dart';
 import 'package:projecthealthapp/presentation/screens/main_page.dart';
 import 'package:projecthealthapp/presentation/screens/settings_screen.dart';
+import 'package:projecthealthapp/common/weightGraphData.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -228,6 +230,17 @@ class _DiaryPageState extends State<DiaryPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(
+                      height: 25,
+                    ),
+                    Container(
+                      child: LineChartWidget(weightData),
+                      height: 300,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                    ),
                       Padding(
                         padding:
                             const EdgeInsets.only(top: 20, left: 17, right: 17),

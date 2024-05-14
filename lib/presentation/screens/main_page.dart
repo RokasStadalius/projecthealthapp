@@ -43,14 +43,12 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
   }
 
-
-
   void getLocalData() async {
     final prefs = await SharedPreferences.getInstance();
     final date = prefs.getString('date') ?? 0;
     if (date != 0) {
       DateTime dateT = DateTime.parse(date.toString());
-      if (dateT.difference(currentDate).inDays == 0) {
+      if (dateT.difference(currentDate).inDays <= 0) {
         final cupCount = prefs.getInt('cupCount') ?? 0;
         final stepCount = prefs.getInt('stepCount') ?? 0;
         setState(() {
@@ -59,9 +57,19 @@ class _MainScreenState extends State<MainScreen> {
         });
         DatabaseService()
             .addDailyData(cupCount: cupCount, stepCount: stepCount);
+        };
+
+        if (dateT.difference(currentDate).inDays > 0) {
+        setState(() {
+          _count = 0;
+          _steps = 0;
+        });
+        DatabaseService()
+            .addDailyData(cupCount: 0, stepCount: 0);
+        };
+        
       }
-    }
-    else if (date == 0)
+        else if (date == 0)
     {
       await prefs.setString('date', currentDate.toString());
       await prefs.setInt('cupCount', 0);
