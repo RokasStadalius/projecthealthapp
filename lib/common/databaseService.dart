@@ -131,7 +131,7 @@ class DatabaseService {
     }
   }
 
- Stream<QuerySnapshot> userDataStream() {
+  Stream<QuerySnapshot> userDataStream() {
     return _db
         .collection("user")
         .where('userId', isEqualTo: userId)
@@ -146,7 +146,9 @@ class DatabaseService {
           .collection('daily')
           .where('userId', isEqualTo: userId)
           .where('date', isLessThanOrEqualTo: currentDate)
-          .where('date', isGreaterThanOrEqualTo: DateTime.now().subtract(Duration(hours:DateTime.now().hour)))
+          .where('date',
+              isGreaterThanOrEqualTo:
+                  DateTime.now().subtract(Duration(hours: DateTime.now().hour)))
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -177,7 +179,9 @@ class DatabaseService {
           .collection('daily')
           .where('userId', isEqualTo: userId)
           .where('date', isLessThanOrEqualTo: currentDate)
-          .where('date', isGreaterThanOrEqualTo: DateTime.now().subtract(Duration(hours:DateTime.now().hour)))
+          .where('date',
+              isGreaterThanOrEqualTo:
+                  DateTime.now().subtract(Duration(hours: DateTime.now().hour)))
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -198,7 +202,7 @@ class DatabaseService {
     }
   }
 
-  Future<void> updateWeight({required String weight}) async{ 
+  Future<void> updateWeight({required String weight}) async {
     try {
       QuerySnapshot querySnapshot = await _db
           .collection('users')
@@ -219,4 +223,75 @@ class DatabaseService {
     }
   }
 
+  Future<Map<String, String>> getUserHeatlthIssues() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    if (querySnapshot.docs.isEmpty) {
+      throw Exception('User document does not exist');
+    }
+
+    DocumentSnapshot userDoc = querySnapshot.docs.first;
+    List<dynamic> healthProblems = userDoc['healthProblems'] as List<dynamic>;
+    String dietPreference = userDoc['foodPreference'];
+    String timeSpent = userDoc['timeSpent'];
+
+    Map<String, String> nutrientParams = {};
+
+    switch (dietPreference) {
+      case 'Vegetarian':
+        nutrientParams['health'] = 'vegetarian';
+      case 'Vegan':
+        nutrientParams['health'] = 'vegan';
+      case 'Healthy / balanced diet':
+        nutrientParams['diet'] = 'balanced';
+      case 'Sports diet':
+        nutrientParams['diet'] = 'high-protein';
+    }
+
+    switch (timeSpent) {
+      case 'Less than 1 hour':
+        nutrientParams['time'] = '10-45';
+      case '1-2 hours':
+        nutrientParams['time'] = '60-120';
+      case '2 or longer':
+        nutrientParams['time'] = '120%2B';
+    }
+
+    for (var issue in healthProblems) {
+      switch (issue) {
+        case 'Overweight, obesity':
+          nutrientParams['calories'] = '300.0-500.0';
+          break;
+        case 'Heart diseases':
+          nutrientParams['CHOLE'] = '0.0-100.0';
+          break;
+        case 'Type 2 diabetes':
+          nutrientParams['SUGAR'] = '0.0-15.0';
+        case 'Iron deficiency':
+          nutrientParams['FE'] = '2.0-6.0';
+        case 'Vitamin D deficiency':
+          nutrientParams['VITD'] = '400.0-800.0';
+        case 'Calcium deficiency':
+          nutrientParams['CA'] = '200.0-500.0';
+        case 'Vitamin A deficiency':
+          nutrientParams['VITA_RAE'] = '300.0-900.0';
+        case 'Magnesium deficiency':
+          nutrientParams['MG'] = '100.0-300.0';
+        case 'Digestive problems':
+          nutrientParams['FIBTG'] = '5.0-10.0';
+      }
+    }
+    return nutrientParams;
+  }
+
+  String buildNutrientQuery(Map<String, String> nutrientParams) {
+    List<String> queryParams = [];
+    nutrientParams.forEach((key, value) {
+      queryParams.add('$key=$value');
+    });
+    return queryParams.join('&');
+  }
 }

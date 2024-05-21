@@ -27,7 +27,7 @@ class _FoodPageState extends State<FoodPage> {
   }
 
   Future<void> _fetchRecipes() async {
-    recipes = await api.getRecipes('pork', 'balanced'); // Await the future
+    recipes = await api.getRecipes(); // Await the future
     setState(() {}); // Trigger a rebuild after fetching data
   }
 
@@ -40,7 +40,8 @@ class _FoodPageState extends State<FoodPage> {
 
   void loadlist() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() =>  selectedIngredients= prefs.getStringList('selectedIngredients')!);
+    setState(() =>
+        selectedIngredients = prefs.getStringList('selectedIngredients')!);
   }
 
   @override
@@ -167,7 +168,7 @@ class _FoodPageState extends State<FoodPage> {
                                   ],
                                 ),
                               ),
-                              Container(
+                              SizedBox(
                                 height: MediaQuery.of(context).size.height *
                                     0.5, // Adjust the height as needed
                                 child: ListView.builder(
@@ -188,7 +189,7 @@ class _FoodPageState extends State<FoodPage> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: Column(
+                                child: const Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(

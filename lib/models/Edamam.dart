@@ -1,17 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:projecthealthapp/common/databaseService.dart';
 
 class EdamamApiService {
   final String apiKey = 'af6c211d6c46390d16196bf54b3286fc';
   final String apiUrl = 'https://api.edamam.com/api/recipes/v2';
   final String appId = 'e9704860';
+  final DatabaseService _db = DatabaseService();
 
   EdamamApiService();
 
-  Future<List<EdamamRecipeModel>> getRecipes(String query, String diet) async {
+  Future<List<EdamamRecipeModel>> getRecipes() async {
+    Map<String, String> nutrientParams = await _db.getUserHeatlthIssues();
+    String query = _db.buildNutrientQuery(nutrientParams);
+    String url = '$apiUrl?type=public&app_id=$appId&app_key=$apiKey&$query';
+    print(url);
     final response = await http.get(
-      Uri.parse(
-          '$apiUrl?type=public&q=$query&app_id=$appId&app_key=$apiKey&diet=$diet'),
+      Uri.parse(url),
     );
 
     if (response.statusCode == 200) {
