@@ -44,6 +44,7 @@ class EdamamRecipeModel {
   String url;
   List<bool> takedingredients;
   List<String> ingredients;
+  Map<String, NutrientInfo> nutrients;
 
   EdamamRecipeModel({
     required this.title,
@@ -53,6 +54,7 @@ class EdamamRecipeModel {
     required this.cookingTime,
     required this.ingredients,
     required this.url,
+    required this.nutrients,
   }) : takedingredients = List<bool>.filled(ingredients.length, false);
 
   // Method to convert a Map to a RecipeModel
@@ -66,6 +68,29 @@ class EdamamRecipeModel {
       url: map['recipe']['url'],
       ingredients: List<String>.from(
           map['recipe']['ingredients'].map((ingredient) => ingredient['text'])),
+      nutrients: (map['recipe']['totalNutrients'] as Map<String, dynamic>).map(
+        (key, value) => MapEntry(key, NutrientInfo.fromJson(value)),
+      ),
+    );
+  }
+}
+
+class NutrientInfo {
+  final String label;
+  final double quantity;
+  final String unit;
+
+  NutrientInfo({
+    required this.label,
+    required this.quantity,
+    required this.unit,
+  });
+
+  factory NutrientInfo.fromJson(Map<String, dynamic> json) {
+    return NutrientInfo(
+      label: json['label'],
+      quantity: json['quantity'],
+      unit: json['unit'],
     );
   }
 }

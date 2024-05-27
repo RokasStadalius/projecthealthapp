@@ -33,6 +33,7 @@ class RecipeDetailScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+            buildNutrientTable(recipe.nutrients),
             SizedBox(height: 16),
             Text(
               'Ingredients:',
@@ -96,6 +97,65 @@ class RecipeDetailScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildNutrientTable(Map<String, NutrientInfo> nutrients) {
+    return Table(
+      border: TableBorder.all(color: Colors.grey),
+      columnWidths: {
+        0: FlexColumnWidth(2),
+        1: FlexColumnWidth(1),
+        2: FlexColumnWidth(1),
+      },
+      children: [
+        TableRow(
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+          ),
+          children: [
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text(
+                'Nutrient',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text(
+                'Quantity',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(8),
+              child: Text(
+                'Unit',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        ...nutrients.entries.map((entry) {
+          return TableRow(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Text(entry.value.label),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Text(entry.value.quantity.toStringAsFixed(2)),
+              ),
+              Padding(
+                padding: EdgeInsets.all(8),
+                child: Text(entry.value.unit),
+              ),
+            ],
+          );
+        }).toList(),
+      ],
     );
   }
 }
