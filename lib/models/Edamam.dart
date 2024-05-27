@@ -13,7 +13,8 @@ class EdamamApiService {
   Future<List<EdamamRecipeModel>> getRecipes() async {
     Map<String, String> nutrientParams = await _db.getUserHeatlthIssues();
     String query = _db.buildNutrientQuery(nutrientParams);
-    String url = '$apiUrl?type=public&app_id=$appId&app_key=$apiKey&$query';
+    String url =
+        '$apiUrl?type=public&app_id=$appId&app_key=$apiKey&$query&dishType=Main Course';
     print(url);
     final response = await http.get(
       Uri.parse(url),

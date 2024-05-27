@@ -5,6 +5,7 @@ import 'package:projecthealthapp/presentation/screens/main_page.dart';
 import 'package:projecthealthapp/presentation/screens/settings_screen.dart';
 import 'package:projecthealthapp/ui/widgets/LoadingCard.dart';
 import 'package:projecthealthapp/ui/widgets/RecipeCard.dart';
+import 'dart:math';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,7 +19,6 @@ class FoodPage extends StatefulWidget {
 class _FoodPageState extends State<FoodPage> {
   EdamamApiService api = EdamamApiService();
   List<EdamamRecipeModel> recipes = [];
-
   @override
   void initState() {
     _fetchRecipes(); // Fetch data asynchronously
@@ -28,6 +28,7 @@ class _FoodPageState extends State<FoodPage> {
 
   Future<void> _fetchRecipes() async {
     recipes = await api.getRecipes(); // Await the future
+    recipes.shuffle(Random());
     setState(() {}); // Trigger a rebuild after fetching data
   }
 
