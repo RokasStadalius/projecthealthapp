@@ -15,6 +15,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   bool isChecked = false;
+  String? errorMessage;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -235,6 +236,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(
                         height: 5,
                       ),
+                      if (errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 5),
                       SizedBox(
                         height: 40,
                         width: 300,
@@ -242,11 +255,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: isChecked
                               ? () {
                                   signUpWithEmailPassword();
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const personalization_begin()));
+                                  if (errorMessage == null) {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const personalization_begin()));
+                                  }
                                 }
                               : null,
                           style: ElevatedButton.styleFrom(
@@ -313,11 +328,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> signUpWithEmailPassword() async {
     try {
       await Auth().signUpWithEmailPassword(
-          email: _emailController.text, password: _passwordController.text);
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
 
       await DatabaseService().AddInitialUserData(name: _nameController.text);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const personalization_begin()),
+      );
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'weak-password':
+          setState(() {
+            errorMessage = 'The password is too weak.';
+          });
+          break;
+        case 'email-already-in-use':
+          setState(() {
+            errorMessage =
+                'The email address is already in use by another account.';
+          });
+          break;
+        case 'invalid-email':
+          setState(() {
+            errorMessage = 'The email address is not valid.';
+          });
+          break;
+        case 'operation-not-allowed':
+          setState(() {
+            errorMessage = 'Email/password accounts are not enabled.';
+          });
+          break;
+        default:
+          setState(() {
+            errorMessage = 'An unknown error occurred: ${e.message}';
+          });
+          break;
+      }
     } catch (e) {
-      print(e);
+      setState(() {
+        errorMessage = 'An error occurred: ${e.toString()}';
+      });
     }
   }
 }

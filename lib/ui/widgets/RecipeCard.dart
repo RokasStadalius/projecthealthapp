@@ -7,6 +7,14 @@ class RecipeCard extends StatelessWidget {
 
   RecipeCard({required this.recipe});
 
+  void saveRecipe(BuildContext context, String recipeName) {
+    // Implement your saving logic here
+    // For example, you can show a snackbar message for now
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$recipeName logged into the diary!')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -20,7 +28,6 @@ class RecipeCard extends StatelessWidget {
               builder: (context) => RecipeDetailScreen(recipe: recipe),
             ),
           );
-          // Handle tapping on the card, navigate to recipe details or do something else
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,12 +49,26 @@ class RecipeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    recipe.title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          recipe.title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: () => saveRecipe(context, recipe.title),
+                        ),
+                      )
+                    ],
                   ),
                   SizedBox(height: 8),
                   Row(

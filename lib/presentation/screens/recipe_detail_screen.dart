@@ -53,51 +53,22 @@ class RecipeDetailScreen extends StatelessWidget {
                   .toList(),
             ),
             SizedBox(height: 16),
-            Text(
-              'Steps:',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Center(
+              child: ElevatedButton(
+                onPressed: _launchUrl,
+                child: Text('Click here to see recipe steps'),
               ),
-            ),
-            SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    text: 'Due to copyright we can only provide the url:\n',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black, // Adjust text color as needed
-                    ),
-                    children: [
-                      TextSpan(
-                        text: recipe.url,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.blue, // Style link text
-                          decoration:
-                              TextDecoration.underline, // Underline link text
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () async {
-                            if (await canLaunchUrl(Uri.parse(recipe.url))) {
-                              await launchUrl(Uri.parse(recipe.url));
-                            } else {
-                              throw 'Could not launch URL';
-                            }
-                          },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _launchUrl() async {
+    if (!await launchUrl(Uri.parse(recipe.url))) {
+      throw Exception('Could not launch $recipe.url');
+    }
   }
 
   Widget buildNutrientTable(Map<String, NutrientInfo> nutrients) {
