@@ -17,36 +17,87 @@ class DiaryPage extends StatefulWidget {
 
 class _DiaryPageState extends State<DiaryPage> {
   List<String> selectedIngredients = [];
-  void loadlist() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() =>
-        selectedIngredients = prefs.getStringList('selectedIngredients')!);
-  }
-
-  List<WeightEntry> weightEntries = [];
-  Future<void> fetchWeightData() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('weights')
-        .where('userID', isEqualTo: DatabaseService().userId)
-        .orderBy('date')
-        .get();
-
-    final data = snapshot.docs.map((doc) {
-      final timestamp = (doc['date'] as Timestamp).toDate();
-      final weight = double.parse(doc['weight']);
-      return WeightEntry(date: timestamp, weight: weight);
-    }).toList();
-
-    setState(() {
-      weightEntries = data;
-    });
-  }
-
+  DateTime selectedDate = DateTime.now();
+  double? selectedDateWeight;
 
   @override
   void initState() {
-    loadlist();
     super.initState();
+    loadlist();
+    fetchWeightData();
+  }
+
+  void loadlist() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() =>
+        selectedIngredients = prefs.getStringList('selectedIngredients') ?? []);
+  }
+
+  List<WeightEntry> weightEntries = [];
+  List<WeightGraphData> graphData = [];
+
+  void fetchWeightData() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('weight')
+          .where('userID', isEqualTo: DatabaseService().userId)
+          .where('date', isGreaterThanOrEqualTo: selectedDate.toUtc())
+          .where('date',
+              isLessThan: selectedDate.add(const Duration(days: 1)).toUtc())
+          .get();
+
+      final data = snapshot.docs.map((doc) {
+        final timestamp = (doc['date'] as Timestamp).toDate();
+        final weight = double.parse(doc['weight']);
+        return WeightEntry(date: timestamp, weight: weight);
+      }).toList();
+
+      setState(() {
+        weightEntries = data;
+        selectedDateWeight = getWeightForDate(selectedDate);
+      });
+    } catch (e) {
+      print('Error fetching weight data: $e');
+    }
+  }
+
+  void fetchIngredientsData(DateTime selectedDate) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('DailyIngredients')
+          .where('userID', isEqualTo: DatabaseService().userId)
+          .where('date', isEqualTo: selectedDate.toString().split(' ')[0])
+          .get();
+
+      final List<String> ingredients = snapshot.docs.map((doc) {
+        return doc['ingredient'].toString();
+      }).toList();
+
+      setState(() {
+        selectedIngredients = ingredients;
+      });
+    } catch (e) {
+      print('Error fetching ingredients data: $e');
+    }
+  }
+
+  double? getWeightForDate(DateTime date) {
+    final entry = weightEntries.firstWhere(
+      (entry) =>
+          entry.date.year == date.year &&
+          entry.date.month == date.month &&
+          entry.date.day == date.day,
+      orElse: () => WeightEntry(date: date, weight: 0),
+    );
+    return entry.weight != 0 ? entry.weight : null;
+  }
+
+  void onDateChanged(DateTime date) {
+    setState(() {
+      selectedDate = date;
+      fetchWeightData();
+      fetchIngredientsData(selectedDate);
+    });
   }
 
   @override
@@ -121,10 +172,10 @@ class _DiaryPageState extends State<DiaryPage> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: CalendarDatePicker(
-                              initialDate: DateTime.now(),
+                              initialDate: selectedDate,
                               firstDate: DateTime(2020),
                               lastDate: DateTime(2026),
-                              onDateChanged: (value) => {},
+                              onDateChanged: onDateChanged,
                               currentDate: DateTime.now(),
                             )),
                       ),
@@ -132,14 +183,14 @@ class _DiaryPageState extends State<DiaryPage> {
                         padding: const EdgeInsets.only(left: 17, right: 17),
                         child: Container(
                           alignment: Alignment.center,
-                          height: 275,
+                          height: 230,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Column(
+                          child: Column(
                             children: [
-                              Padding(
+                              const Padding(
                                 padding: EdgeInsets.only(top: 20, bottom: 20),
                                 child: Text(
                                   'Statistics',
@@ -157,7 +208,7 @@ class _DiaryPageState extends State<DiaryPage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
                                     children: [
-                                      Text(
+                                      const Text(
                                         'Weight:',
                                         style: TextStyle(
                                           fontFamily: 'Poppins',
@@ -166,8 +217,10 @@ class _DiaryPageState extends State<DiaryPage> {
                                         ),
                                       ),
                                       Text(
-                                        '70 kg',
-                                        style: TextStyle(
+                                        selectedDateWeight != null
+                                            ? '${selectedDateWeight!.toStringAsFixed(1)} kg'
+                                            : 'No data',
+                                        style: const TextStyle(
                                           fontSize: 30,
                                           fontFamily: 'Poppins',
                                           color:
@@ -176,30 +229,12 @@ class _DiaryPageState extends State<DiaryPage> {
                                       ),
                                     ],
                                   ),
-                                  Row(
+                                  const Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
-                                    children: [
-                                      Text(
-                                        'Health streak:',
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 19,
-                                          color: Color.fromRGBO(59, 59, 59, 1),
-                                        ),
-                                      ),
-                                      Text(
-                                        '100 days',
-                                        style: TextStyle(
-                                          fontSize: 30,
-                                          fontFamily: 'Poppins',
-                                          color:
-                                              Color.fromRGBO(255, 199, 199, 1),
-                                        ),
-                                      ),
-                                    ],
+                                    children: [],
                                   ),
-                                  Row(
+                                  const Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
                                     children: [
@@ -222,7 +257,7 @@ class _DiaryPageState extends State<DiaryPage> {
                                       ),
                                     ],
                                   ),
-                                  Row(
+                                  const Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
                                     children: [
@@ -246,22 +281,22 @@ class _DiaryPageState extends State<DiaryPage> {
                                     ],
                                   ),
                                 ],
-                              )
+                              ),
                             ],
                           ),
                         ),
                       ),
                       const SizedBox(
-                      height: 25,
-                    ),
-                    Container(
-                      child: LineChartWidget(weightData),
-                      height: 300,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                    ),
+                        height: 25,
+                      ),
+                      // Container(
+                      //   height: 300,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(20),
+                      //   ),
+                      //   child: LineChartWidget(graphData),
+                      // ),
                       Padding(
                         padding:
                             const EdgeInsets.only(top: 20, left: 17, right: 17),
@@ -285,110 +320,37 @@ class _DiaryPageState extends State<DiaryPage> {
                                   ),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 30, right: 30, top: 20),
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(11),
-                                    color: selectedIngredients.contains('Nuts')
-                                        ? const Color.fromRGBO(255, 199, 199, 1)
-                                        : Colors.white,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 15.0),
-                                    child: Text(
-                                      'Nuts',
-                                      style: TextStyle(
-                                          color: selectedIngredients
-                                                  .contains('Nuts')
-                                              ? Colors.white
-                                              : const Color.fromRGBO(
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: selectedIngredients.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 30, right: 30, top: 20),
+                                      child: Container(
+                                        alignment: Alignment.centerLeft,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(11),
+                                          color: Colors.white,
+                                        ),
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 15.0),
+                                          child: Text(
+                                            selectedIngredients[index],
+                                            style: const TextStyle(
+                                              color: Color.fromRGBO(
                                                   135, 133, 162, 1),
-                                          fontFamily: 'Poppins',
-                                          fontSize: 20),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 30, right: 30, top: 20),
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(11),
-                                    color: selectedIngredients.contains('Milk')
-                                        ? const Color.fromRGBO(255, 199, 199, 1)
-                                        : Colors.white,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 15.0),
-                                    child: Text(
-                                      'Milk',
-                                      style: TextStyle(
-                                          color: selectedIngredients
-                                                  .contains('Milk')
-                                              ? Colors.white
-                                              : const Color.fromRGBO(
-                                                  135, 133, 162, 1),
-                                          fontFamily: 'Poppins',
-                                          fontSize: 20),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 30, right: 30, top: 20),
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(11),
-                                    color: selectedIngredients.contains('Chicken')
-                                        ? const Color.fromRGBO(255, 199, 199, 1)
-                                        : Colors.white,
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 15.0),
-                                    child: Text(
-                                      'Chicken',
-                                      style: TextStyle(
-                                          color: selectedIngredients
-                                                  .contains('Chicken')
-                                              ? Colors.white
-                                              : const Color.fromRGBO(
-                                                  135, 133, 162, 1),
-                                          fontFamily: 'Poppins',
-                                          fontSize: 20),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 30, right: 30, top: 20),
-                                child: Container(
-                                  alignment: Alignment.centerLeft,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(11),
-                                  ),
-                                  child: const Padding(
-                                    padding: EdgeInsets.only(left: 15.0),
-                                    child: Text(
-                                      'Etc',
-                                      style: TextStyle(
-                                          color:
-                                              Color.fromRGBO(135, 133, 162, 1),
-                                          fontFamily: 'Poppins',
-                                          fontSize: 20),
-                                    ),
-                                  ),
+                                              fontFamily: 'Poppins',
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -495,4 +457,3 @@ class WeightEntry {
 
   WeightEntry({required this.date, required this.weight});
 }
-

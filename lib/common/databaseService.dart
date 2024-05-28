@@ -202,17 +202,15 @@ class DatabaseService {
     }
   }
 
-    Future<void> addWeight(
-      {required String weight}) async {
+  Future<void> addWeight({required String weight}) async {
     DateTime currentDate = DateTime.now();
+    DateTime dateWithoutTime =
+        DateTime(currentDate.year, currentDate.month, currentDate.day);
     try {
       QuerySnapshot querySnapshot = await _db
           .collection('weight')
           .where('userID', isEqualTo: userId)
-          .where('date', isLessThanOrEqualTo: currentDate)
-          .where('date',
-              isGreaterThanOrEqualTo:
-                  DateTime.now().subtract(Duration(hours: DateTime.now().hour)))
+          .where('date', isEqualTo: dateWithoutTime)
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -224,7 +222,7 @@ class DatabaseService {
       } else {
         await _db.collection('weight').add({
           'userID': userId,
-          'date': currentDate,
+          'date': dateWithoutTime,
           'weight': weight,
         });
       }
@@ -324,5 +322,30 @@ class DatabaseService {
       queryParams.add('$key=$value');
     });
     return queryParams.join('&');
+  }
+
+  Future<void> saveIngredientToFirebase(String ingredient) async {
+    final date = DateTime.now().toIso8601String().split('T')[0];
+
+    await _db.collection('DailyIngredients').add({
+      'date': date,
+      'userId': userId,
+      'ingredient': ingredient,
+    });
+  }
+
+  Future<void> removeIngredientFromFirebase(String ingredient) async {
+    final date = DateTime.now().toIso8601String().split('T')[0];
+
+    final snapshot = await _db
+        .collection('DailyIngredients')
+        .where('date', isEqualTo: date)
+        .where('userId', isEqualTo: userId)
+        .where('ingredient', isEqualTo: ingredient)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      await _db.collection('DailyIngredients').doc(doc.id).delete();
+    }
   }
 }

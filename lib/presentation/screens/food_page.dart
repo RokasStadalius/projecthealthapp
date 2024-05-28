@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:projecthealthapp/common/auth.dart';
+import 'package:projecthealthapp/common/databaseService.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:projecthealthapp/models/Edamam.dart';
 import 'package:projecthealthapp/presentation/screens/diary_page.dart';
 import 'package:projecthealthapp/presentation/screens/main_page.dart';
@@ -6,8 +10,6 @@ import 'package:projecthealthapp/presentation/screens/settings_screen.dart';
 import 'package:projecthealthapp/ui/widgets/LoadingCard.dart';
 import 'package:projecthealthapp/ui/widgets/RecipeCard.dart';
 import 'dart:math';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 class FoodPage extends StatefulWidget {
   const FoodPage({Key? key}) : super(key: key);
@@ -19,30 +21,42 @@ class FoodPage extends StatefulWidget {
 class _FoodPageState extends State<FoodPage> {
   EdamamApiService api = EdamamApiService();
   List<EdamamRecipeModel> recipes = [];
+  List<String> selectedIngredients = [];
+  final DatabaseService _db = DatabaseService();
+
   @override
   void initState() {
-    _fetchRecipes(); // Fetch data asynchronously
-    loadlist();
+    _fetchRecipes();
+    loadList();
     super.initState();
   }
 
   Future<void> _fetchRecipes() async {
-    recipes = await api.getRecipes(); // Await the future
+    recipes = await api.getRecipes();
     recipes.shuffle(Random());
-    setState(() {}); // Trigger a rebuild after fetching data
+    setState(() {});
   }
 
-  List<String> selectedIngredients = [];
+  void loadList() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      selectedIngredients = prefs.getStringList('selectedIngredients') ?? [];
+    });
+  }
 
-  void test() async {
+  void updateSelectedIngredients(String ingredient) async {
+    setState(() {
+      if (selectedIngredients.contains(ingredient)) {
+        selectedIngredients.remove(ingredient);
+        _db.removeIngredientFromFirebase(ingredient);
+      } else {
+        selectedIngredients.add(ingredient);
+        _db.saveIngredientToFirebase(ingredient);
+      }
+    });
+
     final prefs = await SharedPreferences.getInstance();
     prefs.setStringList('selectedIngredients', selectedIngredients);
-  }
-
-  void loadlist() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() =>
-        selectedIngredients = prefs.getStringList('selectedIngredients')!);
   }
 
   @override
@@ -78,9 +92,7 @@ class _FoodPageState extends State<FoodPage> {
                                 height: 58,
                                 width: 78,
                               ),
-                              const SizedBox(
-                                width: 5,
-                              ),
+                              const SizedBox(width: 5),
                               const Text(
                                 'Hello, Name',
                                 style: TextStyle(
@@ -97,10 +109,12 @@ class _FoodPageState extends State<FoodPage> {
                                 ),
                                 onPressed: () {
                                   Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const SettingsScreen()));
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SettingsScreen(),
+                                    ),
+                                  );
                                 },
                               ),
                             ],
@@ -170,10 +184,10 @@ class _FoodPageState extends State<FoodPage> {
                                 ),
                               ),
                               SizedBox(
-                                height: MediaQuery.of(context).size.height *
-                                    0.5, // Adjust the height as needed
+                                height:
+                                    MediaQuery.of(context).size.height * 0.5,
                                 child: ListView.builder(
-                                  itemCount: 3, // +1 for the loading indicator
+                                  itemCount: 3,
                                   itemBuilder: (context, index) {
                                     if (index < recipes.length) {
                                       return RecipeCard(recipe: recipes[index]);
@@ -202,9 +216,7 @@ class _FoodPageState extends State<FoodPage> {
                                         color: Color.fromRGBO(59, 59, 59, 1),
                                       ),
                                     ),
-                                    SizedBox(
-                                        height:
-                                            5), // Spacer between the two text widgets
+                                    SizedBox(height: 5),
                                     Text(
                                       'If you consumed these ingredients click on them',
                                       style: TextStyle(
@@ -217,162 +229,10 @@ class _FoodPageState extends State<FoodPage> {
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: SizedBox(
-                                  height: 50,
-                                  width: 300,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        if (selectedIngredients
-                                            .contains('Nuts')) {
-                                          selectedIngredients.remove('Nuts');
-                                          test();
-                                        } else {
-                                          selectedIngredients.add('Nuts');
-                                          test();
-                                        }
-                                      });
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        selectedIngredients.contains('Nuts')
-                                            ? const Color.fromRGBO(
-                                                255, 199, 199, 1)
-                                            : Colors.white,
-                                      ),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        selectedIngredients.contains('Nuts')
-                                            ? Colors.white
-                                            : const Color.fromRGBO(
-                                                135, 133, 162, 1),
-                                      ),
-                                      shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Nuts',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: SizedBox(
-                                  height: 50,
-                                  width: 300,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        if (selectedIngredients
-                                            .contains('Milk')) {
-                                          selectedIngredients.remove('Milk');
-                                          test();
-                                        } else {
-                                          selectedIngredients.add('Milk');
-                                          test();
-                                        }
-                                      });
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        selectedIngredients.contains('Milk')
-                                            ? const Color.fromRGBO(
-                                                255, 199, 199, 1)
-                                            : Colors.white,
-                                      ),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        selectedIngredients.contains('Milk')
-                                            ? Colors.white
-                                            : const Color.fromRGBO(
-                                                135, 133, 162, 1),
-                                      ),
-                                      shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Milk',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: SizedBox(
-                                  height: 50,
-                                  width: 300,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        if (selectedIngredients
-                                            .contains('Chicken')) {
-                                          selectedIngredients.remove('Chicken');
-                                          test();
-                                        } else {
-                                          selectedIngredients.add('Chicken');
-                                          test();
-                                        }
-                                      });
-                                    },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        selectedIngredients.contains('Chicken')
-                                            ? const Color.fromRGBO(
-                                                255, 199, 199, 1)
-                                            : Colors.white,
-                                      ),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        selectedIngredients.contains('Chicken')
-                                            ? Colors.white
-                                            : const Color.fromRGBO(
-                                                135, 133, 162, 1),
-                                      ),
-                                      shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Chicken',
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 45,
-                              ),
+                              ingredientButton('Nuts'),
+                              ingredientButton('Milk'),
+                              ingredientButton('Chicken'),
+                              const SizedBox(height: 45),
                             ],
                           ),
                         ),
@@ -387,81 +247,109 @@ class _FoodPageState extends State<FoodPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Column(children: [
-                    IconButton(
-                      color: const Color.fromRGBO(135, 133, 162, 1),
-                      icon: const ImageIcon(
-                        AssetImage('assets/diary.png'),
-                      ),
-                      iconSize: 28,
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const DiaryPage()));
-                      },
-                    ),
-                    const Text(
-                      "Diary",
-                      style: TextStyle(
-                        color: Color.fromRGBO(135, 133, 162, 1),
-                        fontWeight: FontWeight.w100,
-                        fontFamily: 'Poppins',
-                        fontSize: 15,
-                      ),
-                    ),
-                  ]),
-                  Column(
-                    children: [
-                      IconButton(
-                          color: const Color.fromRGBO(135, 133, 162, 1),
-                          icon: const ImageIcon(
-                            AssetImage('assets/home.png'),
-                          ),
-                          iconSize: 28,
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const MainScreen(),
-                                ));
-                          }),
-                      const Text(
-                        "Home",
-                        style: TextStyle(
-                          color: Color.fromRGBO(135, 133, 162, 1),
-                          fontWeight: FontWeight.w100,
-                          fontFamily: 'Poppins',
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
+                  bottomNavigationItem(
+                    icon: 'assets/diary.png',
+                    label: 'Diary',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const DiaryPage()),
+                      );
+                    },
                   ),
-                  Column(children: [
-                    IconButton(
-                      color: const Color.fromRGBO(255, 199, 199, 1),
-                      icon: const ImageIcon(
-                        AssetImage('assets/food.png'),
-                      ),
-                      iconSize: 28,
-                      onPressed: () => print('home pressed'),
-                    ),
-                    const Text(
-                      "Food",
-                      style: TextStyle(
-                        color: Color.fromRGBO(255, 199, 199, 1),
-                        fontWeight: FontWeight.w100,
-                        fontFamily: 'Poppins',
-                        fontSize: 15,
-                      ),
-                    ),
-                  ]),
+                  bottomNavigationItem(
+                    icon: 'assets/home.png',
+                    label: 'Home',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const MainScreen()),
+                      );
+                    },
+                  ),
+                  bottomNavigationItem(
+                    icon: 'assets/food.png',
+                    label: 'Food',
+                    onPressed: () => print('home pressed'),
+                    selected: true,
+                  ),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget ingredientButton(String ingredient) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: SizedBox(
+        height: 50,
+        width: 300,
+        child: ElevatedButton(
+          onPressed: () {
+            updateSelectedIngredients(ingredient);
+          },
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(
+              selectedIngredients.contains(ingredient)
+                  ? const Color.fromRGBO(255, 199, 199, 1)
+                  : Colors.white,
+            ),
+            foregroundColor: MaterialStateProperty.all<Color>(
+              selectedIngredients.contains(ingredient)
+                  ? Colors.white
+                  : const Color.fromRGBO(135, 133, 162, 1),
+            ),
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          child: Text(
+            ingredient,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 15,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget bottomNavigationItem(
+      {required String icon,
+      required String label,
+      required VoidCallback onPressed,
+      bool selected = false}) {
+    return Column(
+      children: [
+        IconButton(
+          color: selected
+              ? const Color.fromRGBO(255, 199, 199, 1)
+              : const Color.fromRGBO(135, 133, 162, 1),
+          icon: ImageIcon(AssetImage(icon)),
+          iconSize: 28,
+          onPressed: onPressed,
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: selected
+                ? const Color.fromRGBO(255, 199, 199, 1)
+                : const Color.fromRGBO(135, 133, 162, 1),
+            fontWeight: FontWeight.w100,
+            fontFamily: 'Poppins',
+            fontSize: 15,
+          ),
+        ),
+      ],
     );
   }
 }

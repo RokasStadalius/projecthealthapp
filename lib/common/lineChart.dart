@@ -9,7 +9,7 @@ class LineChartWidget extends StatelessWidget {
 
   const LineChartWidget(this.weight, {Key? key}) : super(key: key);
 
-    Future<List<DateTime>> fetchDates() async {
+  Future<List<DateTime>> fetchDates() async {
     try {
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('weight')
@@ -17,23 +17,22 @@ class LineChartWidget extends StatelessWidget {
           .orderBy('date')
           .get();
 
-         return querySnapshot.docs.map((doc) {
+      return querySnapshot.docs.map((doc) {
         Timestamp timestamp = doc['date'];
         return timestamp.toDate();
       }).toList();
-
     } catch (e) {
       print('Error fetching dates: $e');
       return [];
     }
   }
 
-Widget bottomTitleWidgets(double value, TitleMeta meta) {
+  Widget bottomTitleWidgets(double value, TitleMeta meta) {
     return FutureBuilder<List<DateTime>>(
       future: fetchDates(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator(); // Placeholder while loading
+          return const CircularProgressIndicator(); // Placeholder while loading
         }
         if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
@@ -63,6 +62,7 @@ Widget bottomTitleWidgets(double value, TitleMeta meta) {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
@@ -75,13 +75,12 @@ Widget bottomTitleWidgets(double value, TitleMeta meta) {
                         .map((point) => FlSpot(point.x, point.y))
                         .toList(),
                     isCurved: true,
-                    dotData: FlDotData(show: true)),
+                    dotData: const FlDotData(show: true)),
               ],
               titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
                     axisNameSize: 25,
                     axisNameWidget: const Text(
-                      
                       'Date',
                       style: TextStyle(
                         fontSize: 15,
