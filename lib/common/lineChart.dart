@@ -1,43 +1,68 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:projecthealthapp/common/weightGraphData.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:projecthealthapp/common/databaseService.dart';
 
 class LineChartWidget extends StatelessWidget {
   final List<WeightGraphData> weight;
 
   const LineChartWidget(this.weight, {Key? key}) : super(key: key);
 
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    String text;
-    switch (value.toInt()) {
-      case 0:
-        text = 'Jan';
-        break;
-      case 1:
-        text = 'Feb';
-        break;
-      case 2:
-        text = 'Mar';
-        break;
-      case 3:
-        text = 'Apr';
-        break;
-      default:
-        return Container();
+    Future<List<DateTime>> fetchDates() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('weight')
+          .where('userID', isEqualTo: DatabaseService().userId)
+          .orderBy('date')
+          .get();
+
+         return querySnapshot.docs.map((doc) {
+        Timestamp timestamp = doc['date'];
+        return timestamp.toDate();
+      }).toList();
+
+    } catch (e) {
+      print('Error fetching dates: $e');
+      return [];
     }
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      space: 4,
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Color.fromRGBO(59, 59, 59, 1),
-        ),
-      ),
-    );
   }
 
+Widget bottomTitleWidgets(double value, TitleMeta meta) {
+    return FutureBuilder<List<DateTime>>(
+      future: fetchDates(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Placeholder while loading
+        }
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        if (snapshot.hasData) {
+          List<DateTime> dates = snapshot.data!;
+          switch (value.toInt()) {
+            case 0:
+              return Text("${dates[0].month}-${dates[0].day}");
+            case 1:
+              return Text("${dates[1].month}-${dates[1].day}");
+            case 2:
+              return Text("${dates[2].month}-${dates[2].day}");
+            case 3:
+              return Text("${dates[3].month}-${dates[2].day}");
+            case 4:
+              return Text("${dates[4].month}-${dates[4].day}");
+            case 5:
+              return Text("${dates[5].month}-${dates[5].day}");
+            case 6:
+              return Text("${dates[6].month}-${dates[6].day}");
+            default:
+              return Container();
+          }
+        }
+        return Container(); // Default return
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
@@ -57,7 +82,7 @@ class LineChartWidget extends StatelessWidget {
                     axisNameSize: 25,
                     axisNameWidget: const Text(
                       
-                      'Months',
+                      'Date',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,

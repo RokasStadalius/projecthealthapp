@@ -202,6 +202,37 @@ class DatabaseService {
     }
   }
 
+    Future<void> addWeight(
+      {required String weight}) async {
+    DateTime currentDate = DateTime.now();
+    try {
+      QuerySnapshot querySnapshot = await _db
+          .collection('weight')
+          .where('userID', isEqualTo: userId)
+          .where('date', isLessThanOrEqualTo: currentDate)
+          .where('date',
+              isGreaterThanOrEqualTo:
+                  DateTime.now().subtract(Duration(hours: DateTime.now().hour)))
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        String documentId = querySnapshot.docs.first.id;
+
+        await _db.collection('weight').doc(documentId).update({
+          'weight': weight,
+        });
+      } else {
+        await _db.collection('weight').add({
+          'userID': userId,
+          'date': currentDate,
+          'weight': weight,
+        });
+      }
+    } catch (e) {
+      print("Error adding weight data: $e");
+    }
+  }
+
   Future<void> updateWeight({required String weight}) async {
     try {
       QuerySnapshot querySnapshot = await _db

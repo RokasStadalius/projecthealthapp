@@ -569,6 +569,7 @@ class _MainScreenState extends State<MainScreen> {
                                         // Handle confirm button press
                                         DatabaseService().updateWeight(
                                             weight: weightController.text);
+                                        DatabaseService().addWeight(weight: weightController.text);
                                         setState(() => weight =
                                             int.parse(weightController.text));
                                         Navigator.of(context).pop();

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:projecthealthapp/common/databaseService.dart';
 import 'package:projecthealthapp/common/lineChart.dart';
 import 'package:projecthealthapp/presentation/screens/food_page.dart';
 import 'package:projecthealthapp/presentation/screens/main_page.dart';
 import 'package:projecthealthapp/presentation/screens/settings_screen.dart';
 import 'package:projecthealthapp/common/weightGraphData.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DiaryPage extends StatefulWidget {
@@ -21,6 +22,26 @@ class _DiaryPageState extends State<DiaryPage> {
     setState(() =>
         selectedIngredients = prefs.getStringList('selectedIngredients')!);
   }
+
+  List<WeightEntry> weightEntries = [];
+  Future<void> fetchWeightData() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('weights')
+        .where('userID', isEqualTo: DatabaseService().userId)
+        .orderBy('date')
+        .get();
+
+    final data = snapshot.docs.map((doc) {
+      final timestamp = (doc['date'] as Timestamp).toDate();
+      final weight = double.parse(doc['weight']);
+      return WeightEntry(date: timestamp, weight: weight);
+    }).toList();
+
+    setState(() {
+      weightEntries = data;
+    });
+  }
+
 
   @override
   void initState() {
@@ -467,3 +488,11 @@ class _DiaryPageState extends State<DiaryPage> {
     );
   }
 }
+
+class WeightEntry {
+  final DateTime date;
+  final double weight;
+
+  WeightEntry({required this.date, required this.weight});
+}
+
