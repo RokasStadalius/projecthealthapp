@@ -293,10 +293,6 @@ class DatabaseService {
       switch (issue) {
         case 'Overweight, obesity':
           nutrientParams['calories'] = '300.0-500.0';
-          break;
-        case 'Heart diseases':
-          nutrientParams['CHOLE'] = '0.0-100.0';
-          break;
         case 'Type 2 diabetes':
           nutrientParams['SUGAR'] = '0.0-15.0';
         case 'Iron deficiency':
@@ -309,8 +305,10 @@ class DatabaseService {
           nutrientParams['VITA_RAE'] = '300.0-900.0';
         case 'Magnesium deficiency':
           nutrientParams['MG'] = '100.0-300.0';
-        case 'Digestive problems':
-          nutrientParams['FIBTG'] = '5.0-10.0';
+        case 'Zinc deficiency':
+          nutrientParams['ZN'] = '10.0-20.0';
+        case 'Vitamin C deficiency':
+          nutrientParams['VITC'] = '166.0-333.0';
       }
     }
     return nutrientParams;

@@ -23,15 +23,16 @@ class _DiaryPageState extends State<DiaryPage> {
   @override
   void initState() {
     super.initState();
-    loadlist();
+    //loadlist();
     fetchWeightData();
+    fetchIngredientsData(selectedDate);
   }
 
-  void loadlist() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() =>
-        selectedIngredients = prefs.getStringList('selectedIngredients') ?? []);
-  }
+  // void loadlist() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   setState(() =>
+  //       selectedIngredients = prefs.getStringList('selectedIngredients') ?? []);
+  // }
 
   List<WeightEntry> weightEntries = [];
   List<WeightGraphData> graphData = [];
@@ -63,19 +64,35 @@ class _DiaryPageState extends State<DiaryPage> {
 
   void fetchIngredientsData(DateTime selectedDate) async {
     try {
+      String formattedDate = selectedDate.toString().split(' ')[0];
+      String userId = DatabaseService().userId;
+
+      // Debug prints
+      print('Formatted Date: $formattedDate');
+      print('UserID: $userId');
+
       final snapshot = await FirebaseFirestore.instance
           .collection('DailyIngredients')
-          .where('userID', isEqualTo: DatabaseService().userId)
-          .where('date', isEqualTo: selectedDate.toString().split(' ')[0])
+          .where('userId', isEqualTo: userId)
+          .where('date', isEqualTo: formattedDate)
           .get();
 
-      final List<String> ingredients = snapshot.docs.map((doc) {
-        return doc['ingredient'].toString();
-      }).toList();
+      if (snapshot.docs.isEmpty) {
+        print('No documents found for the given date and userID.');
+      } else {
+        final List<String> ingredients = snapshot.docs.map((doc) {
+          return doc['ingredient'].toString();
+        }).toList();
 
-      setState(() {
-        selectedIngredients = ingredients;
-      });
+        print('Ingredients found: ${ingredients.length}');
+        if (ingredients.isNotEmpty) {
+          print('First ingredient: ${ingredients[0]}');
+        }
+
+        setState(() {
+          selectedIngredients = ingredients;
+        });
+      }
     } catch (e) {
       print('Error fetching ingredients data: $e');
     }
