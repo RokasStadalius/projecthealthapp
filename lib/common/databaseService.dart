@@ -346,4 +346,29 @@ class DatabaseService {
       await _db.collection('DailyIngredients').doc(doc.id).delete();
     }
   }
+
+  Future<List<String>> getUserHealthProblemsList() async {
+    try {
+      QuerySnapshot querySnapshot = await _db
+          .collection('users')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentSnapshot userDoc = querySnapshot.docs.first;
+        List<dynamic> healthProblems =
+            userDoc['healthProblems'] as List<dynamic>;
+        List<String> userHealthProblems = healthProblems.cast<String>();
+        return userHealthProblems;
+      } else {
+        print("No document found with userId: $userId");
+        return [];
+        // Return an empty list or handle the case where no document matches the userId
+      }
+    } catch (e) {
+      print("Error fetching user health problems: $e");
+      // Handle the error later
+      return [];
+    }
+  }
 }
