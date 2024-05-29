@@ -16,15 +16,14 @@ class _QuestionsProblemsState extends State<QuestionsProblems> {
     setState(() {
       String problem = [
         'Overweight, obesity',
-        'Heart diseases',
         'Type 2 diabetes',
         'Iron deficiency',
-        'Iodine deficiency',
         'Vitamin D deficiency',
         'Calcium deficiency',
         'Vitamin A deficiency',
         'Magnesium deficiency',
-        'Digestive problems',
+        'Zinc deficiency',
+        'Vitamin C deficiency'
       ][index];
 
       // Toggle the selected health problem
@@ -68,7 +67,7 @@ class _QuestionsProblemsState extends State<QuestionsProblems> {
                       const SizedBox(
                         height: 50,
                       ),
-                      for (int i = 0; i < 10; i++)
+                      for (int i = 0; i < 9; i++)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 15),
                           child: SizedBox(
@@ -82,15 +81,14 @@ class _QuestionsProblemsState extends State<QuestionsProblems> {
                                 backgroundColor:
                                     selectedHealthProblems.contains([
                                   'Overweight, obesity',
-                                  'Heart diseases',
                                   'Type 2 diabetes',
                                   'Iron deficiency',
-                                  'Iodine deficiency',
                                   'Vitamin D deficiency',
                                   'Calcium deficiency',
                                   'Vitamin A deficiency',
                                   'Magnesium deficiency',
-                                  'Digestive problems',
+                                  'Zinc deficiency',
+                                  'Vitamin C deficiency'
                                 ][i])
                                         ? const Color.fromRGBO(135, 133, 162, 1)
                                         : Colors.white,
@@ -101,30 +99,28 @@ class _QuestionsProblemsState extends State<QuestionsProblems> {
                               child: Text(
                                 [
                                   'Overweight, obesity',
-                                  'Heart diseases',
                                   'Type 2 diabetes',
                                   'Iron deficiency',
-                                  'Iodine deficiency',
                                   'Vitamin D deficiency',
                                   'Calcium deficiency',
                                   'Vitamin A deficiency',
                                   'Magnesium deficiency',
-                                  'Digestive problems',
+                                  'Zinc deficiency',
+                                  'Vitamin C deficiency'
                                 ][i],
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 14,
                                   color: selectedHealthProblems.contains([
                                     'Overweight, obesity',
-                                    'Heart diseases',
                                     'Type 2 diabetes',
                                     'Iron deficiency',
-                                    'Iodine deficiency',
                                     'Vitamin D deficiency',
                                     'Calcium deficiency',
                                     'Vitamin A deficiency',
                                     'Magnesium deficiency',
-                                    'Digestive problems',
+                                    'Zinc deficiency',
+                                    'Vitamin C deficiency'
                                   ][i])
                                       ? Colors.white
                                       : const Color.fromRGBO(135, 133, 162, 1),
