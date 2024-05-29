@@ -28,7 +28,15 @@ class _FoodPageState extends State<FoodPage> {
   void initState() {
     _fetchRecipes();
     loadList();
+    _fetchUserHealthProblems();
     super.initState();
+  }
+
+  Future<void> _fetchUserHealthProblems() async {
+    final problems = await DatabaseService().getUserHealthProblemsList();
+    setState(() {
+      userHealthProblems = problems;
+    });
   }
 
   Future<void> _fetchRecipes() async {
@@ -57,6 +65,164 @@ class _FoodPageState extends State<FoodPage> {
 
     final prefs = await SharedPreferences.getInstance();
     prefs.setStringList('selectedIngredients', selectedIngredients);
+  }
+
+  List<String> userHealthProblems = [];
+  Map<String, List<String>> groupedIngredients = {};
+
+  List<String> getIngredientsFromSingle(String healthProblem) {
+    // Mapping health problems to their corresponding food ingredients
+    Map<String, List<String>> healthToIngredients = {
+      'Overweight, obesity': [
+        'Leafy Greens',
+        'Berries',
+        'Nuts and Seeds',
+        'Whole Grains',
+        'Legumes'
+      ],
+      'Type 2 diabetes': [
+        'Non-Starchy Vegetables',
+        'Fatty Fish',
+        'Whole Grains',
+        'Berries',
+        'Nuts'
+      ],
+      'Iron deficiency': [
+        'Red Meat',
+        'Spinach',
+        'Lentils',
+        'Pumpkin Seeds',
+        'Quinoa'
+      ],
+      'Vitamin D deficiency': [
+        'Fatty Fish',
+        'Egg Yolks',
+        'Fortified Foods',
+        'Mushrooms',
+        'Cod Liver Oil'
+      ],
+      'Calcium deficiency': [
+        'Dairy Products',
+        'Leafy Greens',
+        'Almonds',
+        'Fortified Plant Milks',
+        'Tofu'
+      ],
+      'Vitamin A deficiency': [
+        'Carrots',
+        'Sweet Potatoes',
+        'Spinach',
+        'Bell Peppers',
+        'Liver'
+      ],
+      'Magnesium deficiency': [
+        'Dark Chocolate',
+        'Avocados',
+        'Nuts',
+        'Legumes',
+        'Whole Grains'
+      ],
+      'Zinc deficiency': ['Shellfish', 'Meat', 'Seeds', 'Nuts', 'Legumes'],
+      'Vitamin C deficiency': [
+        'Citrus Fruits',
+        'Bell Peppers',
+        'Strawberries',
+        'Kiwi',
+        'Broccoli'
+      ],
+    };
+
+    // List to hold recommended ingredients
+    List<String> recommendedIngredients = [];
+
+    // Loop through each health problem and add corresponding ingredients to the list
+
+    if (healthToIngredients.containsKey(healthProblem)) {
+      recommendedIngredients.addAll(healthToIngredients[healthProblem]!);
+    }
+
+    // Remove duplicates by converting to a set and back to a list
+    recommendedIngredients = recommendedIngredients.toSet().toList();
+
+    return recommendedIngredients;
+  }
+
+  List<String> getIngredients(List<String> healthProblems) {
+    // Mapping health problems to their corresponding food ingredients
+    Map<String, List<String>> healthToIngredients = {
+      'Overweight, obesity': [
+        'Leafy Greens',
+        'Berries',
+        'Nuts and Seeds',
+        'Whole Grains',
+        'Legumes'
+      ],
+      'Type 2 diabetes': [
+        'Non-Starchy Vegetables',
+        'Fatty Fish',
+        'Whole Grains',
+        'Berries',
+        'Nuts'
+      ],
+      'Iron deficiency': [
+        'Red Meat',
+        'Spinach',
+        'Lentils',
+        'Pumpkin Seeds',
+        'Quinoa'
+      ],
+      'Vitamin D deficiency': [
+        'Fatty Fish',
+        'Egg Yolks',
+        'Fortified Foods',
+        'Mushrooms',
+        'Cod Liver Oil'
+      ],
+      'Calcium deficiency': [
+        'Dairy Products',
+        'Leafy Greens',
+        'Almonds',
+        'Fortified Plant Milks',
+        'Tofu'
+      ],
+      'Vitamin A deficiency': [
+        'Carrots',
+        'Sweet Potatoes',
+        'Spinach',
+        'Bell Peppers',
+        'Liver'
+      ],
+      'Magnesium deficiency': [
+        'Dark Chocolate',
+        'Avocados',
+        'Nuts',
+        'Legumes',
+        'Whole Grains'
+      ],
+      'Zinc deficiency': ['Shellfish', 'Meat', 'Seeds', 'Nuts', 'Legumes'],
+      'Vitamin C deficiency': [
+        'Citrus Fruits',
+        'Bell Peppers',
+        'Strawberries',
+        'Kiwi',
+        'Broccoli'
+      ],
+    };
+
+    // List to hold recommended ingredients
+    List<String> recommendedIngredients = [];
+
+    // Loop through each health problem and add corresponding ingredients to the list
+    for (String problem in healthProblems) {
+      if (healthToIngredients.containsKey(problem)) {
+        recommendedIngredients.addAll(healthToIngredients[problem]!);
+      }
+    }
+
+    // Remove duplicates by converting to a set and back to a list
+    recommendedIngredients = recommendedIngredients.toSet().toList();
+
+    return recommendedIngredients;
   }
 
   @override
@@ -229,10 +395,46 @@ class _FoodPageState extends State<FoodPage> {
                                   ],
                                 ),
                               ),
-                              ingredientButton('Nuts'),
-                              ingredientButton('Milk'),
-                              ingredientButton('Chicken'),
-                              const SizedBox(height: 45),
+                              for (String problem in userHealthProblems)
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Center(
+                                    child: Container(
+                                      width: 500,
+                                      decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              'Ingredient suggestions for $problem',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Poppins-n',
+                                                fontSize: 19,
+                                                color: Color.fromRGBO(
+                                                    59, 59, 59, 1),
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          for (String ingredient
+                                              in getIngredientsFromSingle(
+                                                  problem))
+                                            ingredientButton(ingredient),
+                                          const SizedBox(
+                                            height: 10,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
