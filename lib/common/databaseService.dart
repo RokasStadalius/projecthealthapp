@@ -332,6 +332,16 @@ class DatabaseService {
     });
   }
 
+  Future<void> saveRecipeToFirebase(String recipe) async {
+    final date = DateTime.now().toIso8601String().split('T')[0];
+
+    await _db.collection('DailyIngredients').add({
+      'date': date,
+      'userId': userId,
+      'ingredient': recipe,
+    });
+  }
+
   Future<void> removeIngredientFromFirebase(String ingredient) async {
     final date = DateTime.now().toIso8601String().split('T')[0];
 

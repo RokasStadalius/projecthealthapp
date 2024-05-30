@@ -8,27 +8,27 @@ class WeightGraphData {
   WeightGraphData({required this.x, required this.y});
 }
 
-  List<double> weights = [];
-  Future<void> fetchWeights() async {
-    try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('weight')
-          .where('userID', isEqualTo: DatabaseService().userId)
-          .orderBy('date')
-          .get();
+List<double> weights = [];
+Future<void> fetchWeights() async {
+  try {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('weight')
+        .where('userID', isEqualTo: DatabaseService().userId)
+        .orderBy('date')
+        .get();
 
-      weights = querySnapshot.docs.map((doc) {
-        return double.parse(doc['weight']);
-      }).toList();
-    } catch (e) {
-      print('Error fetching weights: $e');
-    }
+    weights = querySnapshot.docs.map((doc) {
+      return double.parse(doc['weight']);
+    }).toList();
+  } catch (e) {
+    print('Error fetching weights: $e');
   }
+}
 
 List<WeightGraphData> get weightData {
   fetchWeights();
   return weights
-      .mapIndexed(
-          ((index, element) => WeightGraphData(x: index.toDouble(), y: element)))
+      .mapIndexed(((index, element) =>
+          WeightGraphData(x: index.toDouble(), y: element)))
       .toList();
 }

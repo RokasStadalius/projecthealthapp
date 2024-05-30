@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:projecthealthapp/models/Edamam.dart';
 import 'package:projecthealthapp/presentation/screens/recipe_detail_screen.dart';
+import 'package:projecthealthapp/common/databaseService.dart';
 
 class RecipeCard extends StatelessWidget {
   final EdamamRecipeModel recipe;
+  final DatabaseService _db = DatabaseService();
 
   RecipeCard({required this.recipe});
 
   void saveRecipe(BuildContext context, String recipeName) {
     // Implement your saving logic here
     // For example, you can show a snackbar message for now
+    _db.saveRecipeToFirebase(recipeName);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$recipeName logged into the diary!')),
     );

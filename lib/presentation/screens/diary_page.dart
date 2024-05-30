@@ -79,6 +79,10 @@ class _DiaryPageState extends State<DiaryPage> {
 
       if (snapshot.docs.isEmpty) {
         print('No documents found for the given date and userID.');
+
+        setState(() {
+          selectedIngredients = ['No food was logged on this date'];
+        });
       } else {
         final List<String> ingredients = snapshot.docs.map((doc) {
           return doc['ingredient'].toString();
@@ -190,8 +194,8 @@ class _DiaryPageState extends State<DiaryPage> {
                             ),
                             child: CalendarDatePicker(
                               initialDate: selectedDate,
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime(2026),
+                              firstDate: DateTime(2024),
+                              lastDate: DateTime(2025),
                               onDateChanged: onDateChanged,
                               currentDate: DateTime.now(),
                             )),
@@ -306,14 +310,14 @@ class _DiaryPageState extends State<DiaryPage> {
                       const SizedBox(
                         height: 25,
                       ),
-                      // Container(
-                      //   height: 300,
-                      //   decoration: BoxDecoration(
-                      //     color: Colors.white,
-                      //     borderRadius: BorderRadius.circular(20),
-                      //   ),
-                      //   child: LineChartWidget(graphData),
-                      // ),
+                      Container(
+                        height: 300,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: LineChartWidget(graphData),
+                      ),
                       Padding(
                         padding:
                             const EdgeInsets.only(top: 20, left: 17, right: 17),
@@ -329,7 +333,7 @@ class _DiaryPageState extends State<DiaryPage> {
                               const Padding(
                                 padding: EdgeInsets.all(8.0),
                                 child: Text(
-                                  'Ingredients that you consumed',
+                                  'Food that you consumed',
                                   style: TextStyle(
                                     fontFamily: 'Poppins',
                                     fontSize: 19,
