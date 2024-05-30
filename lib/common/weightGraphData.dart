@@ -20,6 +20,7 @@ Future<void> fetchWeights() async {
     weights = querySnapshot.docs.map((doc) {
       return double.parse(doc['weight']);
     }).toList();
+    print(weights);
   } catch (e) {
     print('Error fetching weights: $e');
   }

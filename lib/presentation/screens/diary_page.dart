@@ -157,15 +157,6 @@ class _DiaryPageState extends State<DiaryPage> {
                               const SizedBox(
                                 width: 5,
                               ),
-                              const Text(
-                                'Hello, Name',
-                                style: TextStyle(
-                                  color: Color.fromRGBO(30, 30, 30, 1),
-                                  fontWeight: FontWeight.w100,
-                                  fontFamily: 'Poppins-n',
-                                  fontSize: 20,
-                                ),
-                              ),
                               const Spacer(),
                               IconButton(
                                 icon: const ImageIcon(
