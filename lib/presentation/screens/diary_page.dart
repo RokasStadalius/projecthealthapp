@@ -17,15 +17,19 @@ class DiaryPage extends StatefulWidget {
 
 class _DiaryPageState extends State<DiaryPage> {
   List<String> selectedIngredients = [];
-  DateTime selectedDate = DateTime.now();
+  DateTime selectedDate =
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   double? selectedDateWeight;
+
+  List<WeightEntry> weightEntries = [];
+  List<WeightGraphData> graphData = [];
 
   @override
   void initState() {
-    super.initState();
     //loadlist();
     fetchWeightData();
     fetchIngredientsData(selectedDate);
+    super.initState();
   }
 
   // void loadlist() async {
@@ -33,9 +37,6 @@ class _DiaryPageState extends State<DiaryPage> {
   //   setState(() =>
   //       selectedIngredients = prefs.getStringList('selectedIngredients') ?? []);
   // }
-
-  List<WeightEntry> weightEntries = [];
-  List<WeightGraphData> graphData = [];
 
   void fetchWeightData() async {
     try {

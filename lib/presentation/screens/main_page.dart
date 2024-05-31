@@ -37,7 +37,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
-    getUserData();
     getLocalData();
     initPlatformState();
     getUserData();
@@ -108,31 +107,26 @@ class _MainScreenState extends State<MainScreen> {
   Map<String, dynamic>? userData;
 
   void getUserData() async {
-    String? savedUserName = await getUserName();
-    if (savedUserName != null && savedUserName.isNotEmpty) {
-      setState(() => userName = savedUserName);
-    } else {
-      FirebaseFirestore.instance
-          .collection("users")
-          .where("userId", isEqualTo: DatabaseService().userId)
-          .get()
-          .then((QuerySnapshot snap) => {
-                userData = snap.docs.first.data()! as Map<String, dynamic>,
-                setState(() => userName = userData!['name']),
-                saveUserName(userData!['name']),
-                setState(() => weight = jsonDecode(userData!['weight'])),
-                setState(() => height = jsonDecode(userData!['height']) / 100),
-                setState(() => bmi = (weight / (height * height))),
-                if (bmi <= 18.5)
-                  {bmiController.text = "Your BMI is too low!"}
-                else if (bmi > 18.5 && bmi < 24.9)
-                  {bmiController.text = "Your BMI is normal"}
-                else if (bmi > 25 && bmi < 29.9)
-                  {bmiController.text = "Your BMI is slightly too high!"}
-                else
-                  {bmiController.text = "Your BMI is too high!"}
-              });
-    }
+    FirebaseFirestore.instance
+        .collection("users")
+        .where("userId", isEqualTo: DatabaseService().userId)
+        .get()
+        .then((QuerySnapshot snap) => {
+              userData = snap.docs.first.data()! as Map<String, dynamic>,
+              setState(() => userName = userData!['name']),
+              saveUserName(userData!['name']),
+              setState(() => weight = jsonDecode(userData!['weight'])),
+              setState(() => height = jsonDecode(userData!['height']) / 100),
+              setState(() => bmi = (weight / (height * height))),
+              if (bmi <= 18.5)
+                {bmiController.text = "Your BMI is too low!"}
+              else if (bmi > 18.5 && bmi < 24.9)
+                {bmiController.text = "Your BMI is normal"}
+              else if (bmi > 25 && bmi < 29.9)
+                {bmiController.text = "Your BMI is slightly too high!"}
+              else
+                {bmiController.text = "Your BMI is too high!"}
+            });
   }
 
   void onStepCount(StepCount event) {
