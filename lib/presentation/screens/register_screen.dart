@@ -255,13 +255,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onPressed: isChecked
                               ? () {
                                   signUpWithEmailPassword();
-                                  if (errorMessage == null) {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const personalization_begin()));
-                                  }
                                 }
                               : null,
                           style: ElevatedButton.styleFrom(
@@ -333,6 +326,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       await DatabaseService().AddInitialUserData(name: _nameController.text);
+
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const personalization_begin()));
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'weak-password':
