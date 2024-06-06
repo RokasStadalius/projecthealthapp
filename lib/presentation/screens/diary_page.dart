@@ -4,7 +4,6 @@ import 'package:projecthealthapp/common/lineChart.dart';
 import 'package:projecthealthapp/presentation/screens/food_page.dart';
 import 'package:projecthealthapp/presentation/screens/main_page.dart';
 import 'package:projecthealthapp/presentation/screens/settings_screen.dart';
-import 'package:projecthealthapp/common/weightGraphData.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,7 +21,6 @@ class _DiaryPageState extends State<DiaryPage> {
   double? selectedDateWeight;
 
   List<WeightEntry> weightEntries = [];
-  List<WeightGraphData> graphData = [];
 
   @override
   void initState() {
@@ -308,7 +306,7 @@ class _DiaryPageState extends State<DiaryPage> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: LineChartWidget(graphData),
+                        child: WeightGraph(),
                       ),
                       Padding(
                         padding:
